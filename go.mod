@@ -1,4 +1,4 @@
-module 2HW_bank_server
+module Go_HSE_2024
 
 go 1.22
 

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"2HW_bank_server/2HW_bank_server/accounts"
+	"Go_HSE_2024/2HW_bank_server/accounts"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -18,7 +18,10 @@ func main() {
 
 	e.GET("/account", accountsHandler.GetAccount)
 	e.POST("/account/create", accountsHandler.CreateAccount)
+	e.DELETE("/account/delete", accountsHandler.DeleteAccount)
+	e.PATCH("/account/patch", accountsHandler.PatchAccount)
+	e.PUT("/account/change", accountsHandler.ChangeAccount)
 
 	// Start server
-	e.Logger.Fatal(e.Start(":1325"))
+	e.Logger.Fatal(e.Start(":1323"))
 }

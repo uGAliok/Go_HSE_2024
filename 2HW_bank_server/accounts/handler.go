@@ -1,8 +1,8 @@
 package accounts
 
 import (
-	"2HW_bank_server/2HW_bank_server/accounts/dto"
-	"2HW_bank_server/2HW_bank_server/accounts/models"
+	"Go_HSE_2024/2HW_bank_server/accounts/dto"
+	"Go_HSE_2024/2HW_bank_server/accounts/models"
 	"github.com/labstack/echo/v4"
 	"net/http"
 	"sync"
@@ -21,22 +21,24 @@ type Handler struct {
 }
 
 func (h *Handler) CreateAccount(c echo.Context) error {
-	var request dto.ChangeAccountRequest // {"name": "alice", "amount": 50}
+	var request dto.CreateAccountRequest // {"name": "alice", "amount": 50}
 	if err := c.Bind(&request); err != nil {
 		c.Logger().Error(err)
 
 		return c.String(http.StatusBadRequest, "invalid request")
 	}
 
-	if len(request.Name) == 0 {
+	if request.Name == "" {
 		return c.String(http.StatusBadRequest, "empty name")
+	}
+	if request.Amount < 0 {
+		return c.String(http.StatusBadRequest, "invalid amount")
 	}
 
 	h.guard.Lock()
 
 	if _, ok := h.accounts[request.Name]; ok {
 		h.guard.Unlock()
-
 		return c.String(http.StatusForbidden, "account already exists")
 	}
 
@@ -73,17 +75,88 @@ func (h *Handler) GetAccount(c echo.Context) error {
 
 // Удаляет аккаунт
 func (h *Handler) DeleteAccount(c echo.Context) error {
-	panic("implement me")
+	var request dto.DeleteAccountRequest
+	if err := c.Bind(&request); err != nil {
+		c.Logger().Error(err)
+
+		return c.String(http.StatusBadRequest, "invalid request")
+	}
+
+	if request.Name == "" {
+		return c.String(http.StatusBadRequest, "invalid name")
+	}
+
+	h.guard.Lock()
+
+	if _, ok := h.accounts[request.Name]; !ok {
+		h.guard.Unlock()
+		return c.String(http.StatusForbidden, "account does not exist")
+	}
+
+	delete(h.accounts, request.Name)
+
+	h.guard.Unlock()
+
+	return c.NoContent(http.StatusOK)
 }
 
 // Меняет баланс
-func (h *Handler) PathAccount(c echo.Context) error {
-	panic("implement me")
+func (h *Handler) PatchAccount(c echo.Context) error {
+	var request dto.PatchAccountRequest // {"name": "alice", "amount": 50}
+	if err := c.Bind(&request); err != nil {
+		c.Logger().Error(err)
+		return c.String(http.StatusBadRequest, "invalid request")
+	}
+
+	if request.Name == "" {
+		return c.String(http.StatusBadRequest, "empty name")
+	}
+	if request.Amount < 0 {
+		return c.String(http.StatusBadRequest, "invalid amount")
+	}
+
+	h.guard.Lock()
+	defer h.guard.Unlock()
+
+	account, ok := h.accounts[request.Name]
+	if !ok {
+		return c.String(http.StatusNotFound, "account not found")
+	}
+
+	account.Amount = request.Amount
+
+	return c.NoContent(http.StatusOK)
 }
 
 // Меняет имя
 func (h *Handler) ChangeAccount(c echo.Context) error {
-	panic("implement me")
+	var request dto.ChangeAccountRequest // {"old_name": "alice", "new_name": "bob"}
+	if err := c.Bind(&request); err != nil {
+		c.Logger().Error(err)
+		return c.String(http.StatusBadRequest, "invalid request")
+	}
+
+	if request.OldName == "" || request.NewName == "" {
+		return c.String(http.StatusBadRequest, "invalid name")
+	}
+
+	h.guard.Lock()
+	defer h.guard.Unlock()
+
+	account, ok := h.accounts[request.OldName]
+	if !ok {
+		return c.String(http.StatusNotFound, "account not found")
+	}
+
+	if _, ok := h.accounts[request.NewName]; ok {
+		return c.String(http.StatusForbidden, "new account name already exists")
+	}
+
+	delete(h.accounts, request.OldName)
+	account.Name = request.NewName
+	h.accounts[request.NewName] = account
+
+	return c.NoContent(http.StatusOK)
 }
 
 // Написать клиент консольный, который делает запросы
