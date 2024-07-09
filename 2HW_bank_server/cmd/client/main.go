@@ -19,19 +19,6 @@ type Command struct {
 	NewName string
 }
 
-//func (c *Command) Do() error {
-//	switch c.Cmd {
-//	case "create":
-//		return c.create()
-//	default:
-//		return fmt.Errorf("unknown command: %s", c.Cmd)
-//	}
-//}
-//
-//func (c *Command) create() error {
-//	panic("implement me")
-//}
-
 func main() {
 	portVal := flag.Int("port", 8080, "server port")
 	hostVal := flag.String("host", "0.0.0.0", "server host")
@@ -51,47 +38,48 @@ func main() {
 		NewName: *newnameVal,
 	}
 
-	if err := do(cmd); err != nil {
+	if err := cmd.Do(); err != nil {
 		panic(err)
 	}
 }
 
-func do(cmd Command) error {
+func (cmd *Command) Do() error {
 	switch cmd.Cmd {
 	case "create":
-		if err := create(cmd); err != nil {
+		if err := cmd.create(); err != nil {
 			return fmt.Errorf("create account failed: %w", err)
 		}
-
 		return nil
+
 	case "get":
-		if err := get(cmd); err != nil {
+		if err := cmd.get(); err != nil {
 			return fmt.Errorf("get account failed: %w", err)
 		}
-
 		return nil
+
 	case "delete":
-		if err := delete(cmd); err != nil {
+		if err := cmd.delete(); err != nil {
 			return fmt.Errorf("delete account failed: %w", err)
 		}
 		return nil
+
 	case "patch":
-		if err := patch(cmd); err != nil {
+		if err := cmd.patch(); err != nil {
 			return fmt.Errorf("patch account failed: %w", err)
 		}
 		return nil
+
 	case "change":
-		if err := change(cmd); err != nil {
+		if err := cmd.change(); err != nil {
 			return fmt.Errorf("change of account name failed: %w", err)
 		}
 		return nil
-
 	default:
-		return fmt.Errorf("unknown command %s", cmd.Cmd)
+		return fmt.Errorf("unknown command: %s", cmd.Cmd)
 	}
 }
 
-func get(cmd Command) error {
+func (cmd *Command) get() error {
 	resp, err := http.Get(
 		fmt.Sprintf("http://%s:%d/account?name=%s", cmd.Host, cmd.Port, cmd.Name),
 	)
@@ -122,7 +110,7 @@ func get(cmd Command) error {
 	return nil
 }
 
-func create(cmd Command) error {
+func (cmd *Command) create() error {
 	request := dto.CreateAccountRequest{
 		Name:   cmd.Name,
 		Amount: cmd.Amount,
@@ -158,7 +146,7 @@ func create(cmd Command) error {
 	return fmt.Errorf("resp error %s", string(body))
 }
 
-func delete(cmd Command) error {
+func (cmd *Command) delete() error {
 	request := dto.DeleteAccountRequest{Name: cmd.Name}
 
 	data, err := json.Marshal(request)
@@ -198,7 +186,7 @@ func delete(cmd Command) error {
 	return fmt.Errorf("resp error %s", string(body))
 }
 
-func patch(cmd Command) error {
+func (cmd *Command) patch() error {
 	request := dto.PatchAccountRequest{
 		Name:   cmd.Name,
 		Amount: cmd.Amount,
@@ -241,7 +229,7 @@ func patch(cmd Command) error {
 	return fmt.Errorf("resp error %s", string(body))
 }
 
-func change(cmd Command) error {
+func (cmd *Command) change() error {
 	request := dto.ChangeAccountRequest{
 		OldName: cmd.Name,
 		NewName: cmd.NewName,
