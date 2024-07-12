@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+option go_package = "2_and_3_HW_server/proto";
+
+package proto;
+
+service Bank {
+  rpc CreateAccount (CreateAccountRequest) returns (CreateAccountReply) {}
+  rpc GetAccount (GetAccountRequest) returns (GetAccountReply) {}
+  rpc DeleteAccount (DeleteAccountRequest) returns (DeleteAccountReply) {}
+  rpc Patch (PatchRequest) returns (PatchReply) {}
+  rpc UpdateName (UpdateNameRequest) returns (UpdateNameReply) {}
+}
+
+// DTO : REQUESTS & RESPONSES
+message CreateAccountRequest {
+  string name = 1;
+  sint64 amount = 2;
+}
+message GetAccountRequest {
+  string name = 1;
+}
+message DeleteAccountRequest {
+  string name = 1;
+}
+message PatchRequest {
+  string name = 1;
+  sint64 amount = 2;
+}
+message UpdateNameRequest {
+  string name = 1;
+  string new_name = 2;
+}
+
+
+message CreateAccountReply {
+  string message = 1;
+}
+message GetAccountReply {
+  string message = 1;
+}
+message DeleteAccountReply {
+  string message = 1;
+}
+message PatchReply {
+  string message = 1;
+}
+message UpdateNameReply {
+  string message = 1;
+}
