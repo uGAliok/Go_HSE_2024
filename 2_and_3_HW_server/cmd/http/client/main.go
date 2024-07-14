@@ -81,7 +81,7 @@ func (cmd *Command) Do() error {
 
 func (cmd *Command) get() error {
 	resp, err := http.Get(
-		fmt.Sprintf("http://%s:%d/account?name=%s", cmd.Host, cmd.Port, cmd.Name),
+		fmt.Sprintf("http://%s:%d/account/get?name=%s", cmd.Host, cmd.Port, cmd.Name),
 	)
 	if err != nil {
 		return fmt.Errorf("http post failed: %w", err)
